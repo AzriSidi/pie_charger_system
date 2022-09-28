@@ -33,6 +33,7 @@ class Database extends Config
     public $default = [
         'DSN'      => '',
         'hostname' => 'localhost',
+        // 'hostname' => '192.168.0.3',
         'username' => 'root',
         'password' => 'root',
         'database' => 'motorola_charger_db',

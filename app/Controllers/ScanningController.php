@@ -15,6 +15,7 @@ class ScanningController extends Controller {
     }
 
     public function index(){
+        date_default_timezone_set('Asia/Kuala_Lumpur');
         $current_date = date("Y-m-d");
 
         $data['totalTest'] = $this->importCSV

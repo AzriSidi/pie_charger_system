@@ -9,28 +9,54 @@ class ScanningController extends Controller {
     public function __construct(){
         $this->scanning = new ScanningModel();
         $this->importCSV = new ImportCSVModel();
-        $request = \Config\Services::request();
+        $request = \Config\Services::request();        
+        // $this->dir = "C:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //local
+        $this->dir = "E:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //server
     }
 
     public function index(){
-        $data['totalTest'] = $this->importCSV->countAllResults();
-        $data['totalPass'] = $this->importCSV->where('result', 'Pass')->countAllResults();
+        $current_date = date("Y-m-d");
+
+        $data['totalTest'] = $this->importCSV
+                                ->where("date(test_time) = '$current_date'")
+                                ->countAllResults();
+        $data['totalPass'] = $this->importCSV->where('result', 'Pass')
+                                ->where("date(test_time) = '$current_date'")
+                                ->countAllResults();
+
         $results = ['Fail', 'Abort'];
-        $data['totalFail'] = $this->importCSV->whereIn('result', $results)->countAllResults();
-        $yieldRate = ($data['totalPass']/$data['totalTest']) * 100;
+        $data['totalFail'] = $this->importCSV->whereIn('result', $results)
+                                ->where("date(test_time) = '$current_date'")
+                                ->countAllResults();        
+       
+        $yieldRate = 0;
+        try {
+            $yieldRate = ($data['totalPass']/$data['totalTest']) * 100;
+        } catch (\Exception $e) {
+            // echo($e->getMessage());
+        }           
         $data['yieldRate'] = number_format($yieldRate,2);
 
         $data['getFtn'] = $this->scanning->getFailedTestName();
         $data['getModel'] = $this->scanning->getTestModel();
-        for($i=0;$i<count($data['getModel']);$i++){
-            $data['testTotalByModel'][] = $this->importCSV->where('type',$data['getModel']['type'][$i])
-                                        ->countAllResults();
-            $data['testTotalPass'][] = $this->importCSV->where('result', 'Pass')
-                                    ->where('type',$data['getModel']['type'][$i])->countAllResults();
-            $data['testTotalFail'][] = $this->importCSV->whereIn('result', $results)
-                                    ->where('type',$data['getModel']['type'][$i])->countAllResults();
-        }
 
+        if(!empty($data['getModel'])){
+            for($i=0;$i<count($data['getModel']);$i++){
+                $data['testTotalByModel'][] = $this->importCSV
+                                                ->where('type',$data['getModel']['type'][$i])
+                                                ->where("date(test_time) = '$current_date'")
+                                                ->countAllResults();
+                $data['testTotalPass'][] = $this->importCSV
+                                            ->where('result', 'Pass')
+                                            ->where('type',$data['getModel']['type'][$i])
+                                            ->where("date(test_time) = '$current_date'")
+                                            ->countAllResults();
+                $data['testTotalFail'][] = $this->importCSV->whereIn('result', $results)
+                                            ->where('type',$data['getModel']['type'][$i])
+                                            ->where("date(test_time) = '$current_date'")
+                                            ->countAllResults();
+            }
+        }
         return view('header')
             .view('sidebar')
             .view('index',$data)
@@ -107,7 +133,7 @@ class ScanningController extends Controller {
         return redirect()->to(base_url().'/importCSV');     
     }
 
-    public function search_items($model='', $result=''){
+    public function searchItems(){
         $data['model'] = $this->scanning->getModels();
         $data['process_name'] = $this->scanning->getProcessName();
         $data['station_id'] = $this->scanning->getStationID();
@@ -116,6 +142,78 @@ class ScanningController extends Controller {
             .view('sidebar')
             .view('searchItems',$data)
             .view('footer');
+    }
+
+    public function searchItemsAjax(){
+        if ($this->request->isAJAX()) {
+            $unique_id = $this->request->getPost("unique_id");
+            $files = scandir($this->dir,1);
+            $fileName = "";         
+            foreach ($files as $file) {
+                $fileName .= strstr($file,$unique_id);
+            }
+
+            $file = fopen($this->dir.$fileName,"r");
+            $csvData = array();
+            $fileStream = array();
+
+            $removeArr = array();
+            
+            $csvArr = array();           
+            $i = 1;
+            $numberOfFields = 10;
+            $num = 0;
+                    
+            while (($filedata[] = fgetcsv($file)) !== FALSE) {
+                $num = count($filedata);
+                /* if($i > 0 && $num == $numberOfFields){
+                    $csvArr[$filedata[0][0]] = $filedata[0][1];
+                    $csvArr[$filedata[1][0]] = $filedata[1][1];
+                    $csvArr[$filedata[2][0]] = $filedata[2][1];
+                    $csvArr[$filedata[3][0]] = $filedata[3][1];
+                    $csvArr[$filedata[4][0]] = $filedata[4][1];
+                    $csvArr[$filedata[5][0]] = $filedata[5][1];
+                    $csvArr[$filedata[6][0]] = $filedata[6][1];
+                    $csvArr[$filedata[7][0]] = $filedata[7][1];
+                    $csvArr[$filedata[8][0]] = $filedata[8][1];
+                }                
+                $i++; */               
+            }
+
+            $lastArr = $num-1;
+            if(!empty($filedata[$lastArr][0])){
+                $num -= 1;
+            }
+            
+            for($j=10;$j<$num;$j++){
+                $csvData[] = array(
+                    "Num" => $i,
+                    $filedata[9][1] => $filedata[$j][1],
+                    $filedata[9][2] => $filedata[$j][2],
+                    $filedata[9][3] => $filedata[$j][3],
+                    $filedata[9][4] => $filedata[$j][4],
+                    $filedata[9][5] => $filedata[$j][5],
+                    $filedata[9][6] => $filedata[$j][6],
+                    $filedata[9][7] => $filedata[$j][7],
+                    $filedata[9][8] => $filedata[$j][8],
+                    $filedata[9][9] => $filedata[$j][9],
+                    $filedata[9][10] => $filedata[$j][10],
+                    $filedata[9][11] => $filedata[$j][11],
+                    $filedata[9][12] => $filedata[$j][12],
+                    $filedata[9][13] => $filedata[$j][13],
+                    $filedata[9][14] => $filedata[$j][14],
+                    $filedata[9][15] => $filedata[$j][15]
+                );
+                $i++;
+            }
+            header("Content-Type: application/json;charset=utf-8");
+            $jsonArr = array(
+                "fileName"=>$fileName,
+                "testResult"=>$csvData
+            );
+            echo json_encode($jsonArr);
+            fclose($file);
+        }
     }
 
     public function searchData(){
@@ -169,5 +267,28 @@ class ScanningController extends Controller {
             $jsonData = array("data"=>$data,"dataFtn"=>$dataFtn);
             echo json_encode($jsonData);
         } 
+    }
+
+    public function downloadFile($fileName){
+        $url = $this->dir.$fileName;
+        $file = basename($url);  
+        $info = pathinfo($file);
+        if ($info["extension"] == "csv") {
+            header("Content-Description: File Transfer"); 
+            header("Content-Type: application/octet-stream"); 
+            header(
+            "Content-Disposition: attachment; filename=\""
+            . $file . "\"");
+            readfile ($url);
+        }
+        exit();
+        return redirect()->route('searchItems');
+    }
+
+    public function printLabel(){
+        return view('header')
+            .view('sidebar')
+            .view('printLabel')
+            .view('footer');
     }
 }

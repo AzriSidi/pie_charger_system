@@ -8,7 +8,22 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin 2 - Dashboard</title>
+    <?php
+        $uri = current_url(true);
+        if($uri->getSegment(1) == ""){
+            $title = "Dashboard";
+        }
+        if($uri->getSegment(1) == "searchItems"){
+            $title = "Search Items";
+        }
+        if($uri->getSegment(1) == "printLabel"){
+            $title = "Printed Label";
+        }
+        if($uri->getSegment(1) == "importCSV"){
+            $title = "Upload CSV";
+        }
+    ?>
+    <title>Scan SYS - <?=$title?></title>
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">

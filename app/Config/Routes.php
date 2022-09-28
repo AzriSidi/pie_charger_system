@@ -37,10 +37,13 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 // $routes->get('/', 'Home::index');
 $routes->get('/', 'ScanningController::index');
-$routes->get('searchItems', 'ScanningController::search_items');
 $routes->get('importCSV', 'ScanningController::importCsv');
+$routes->get('printLabel', 'ScanningController::printLabel');
 $routes->post('import-csv', 'ScanningController::importCsvToDb');
 $routes->post('searchData', 'ScanningController::searchData');
+$routes->get('searchItems', 'ScanningController::searchItems');
+$routes->post('searchItemsAjax', 'ScanningController::searchItemsAjax');
+$routes->get('downloadFile/(:any)', 'ScanningController::downloadFile/$1');
 /*
  * --------------------------------------------------------------------
  * Additional Routing

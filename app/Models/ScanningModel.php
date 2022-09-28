@@ -7,14 +7,19 @@ class ScanningModel extends Model
 {
     public function __construct(){    
         $this->db = \Config\Database::connect();
+        $this->current_date = date("Y-m-d");
     }
 
     public function getFailedTestName(){
-        $results = ['Fail', 'Abort'];
+        $data = [];
+        $checkFail = ['Fail', 'Abort'];
         $table = $this->db->table('model_test_result');
-        $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')          
-                ->whereIn('result', $results)->groupBy('failed_test_name')->having('ftn > 0')
-                ->orderBy('ftn', 'DESC');
+        $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')
+                    ->where("date(test_time) = '$this->current_date'")         
+                    ->whereIn('result', $checkFail)
+                    ->groupBy('failed_test_name')
+                    ->having('ftn > 0')
+                    ->orderBy('ftn', 'DESC');
         $result = $query->get();
         foreach ($result->getResult() as $row) {
             $data['failed_test_name'][] = $row->failed_test_name;
@@ -25,8 +30,8 @@ class ScanningModel extends Model
 
     public function getModels(){
         $table = $this->db->table('info_charger_scanning a, model_test_result b');
-        $query = $table->select('DISTINCT(a.model)')          
-                ->where('a.type=b.type');
+        $query = $table->select('DISTINCT(a.model)')        
+                    ->where('a.type=b.type');
         $result = $query->get();
         foreach ($result->getResult() as $row) {
             $model[] = $row->model;
@@ -55,8 +60,10 @@ class ScanningModel extends Model
     }
 
     public function getTestModel(){
+        $data = [];
         $table = $this->db->table('info_charger_scanning a');
         $query = $table->select('DISTINCT(a.model) as model, a.type')
+                ->where("date(b.test_time) != '$this->current_date'")
                 ->join('model_test_result b', 'a.type = b.type', 'right');
         $result = $query->get();
         foreach ($result->getResult() as $row) {
@@ -121,22 +128,24 @@ class ScanningModel extends Model
 
     public function getFailedTestNameByModel($search){
         $table = $this->db->table('info_charger_scanning');
-        $query = $table->select('type')          
+        $query = $table->select('type')       
                 ->where('model',$search['model']);
         $result = $query->get();
         $type = "";
         foreach ($result->getResult() as $row) {
             $type = $row->type;
         }
-        // $results = ['Fail', 'Abort'];
+        
+        $data = [];
         if(!empty($type)){
             $table = $this->db->table('model_test_result');
             $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')
                     ->where('type',$type)
-                    ->where('result', $search['result'])->groupBy('failed_test_name')->having('ftn > 0')
+                    ->where('result', $search['result'])
+                    ->groupBy('failed_test_name')
+                    ->having('ftn > 0')
                     ->orderBy('ftn', 'DESC');
-            $result = $query->get();
-            $data = [];
+            $result = $query->get();            
             foreach ($result->getResult() as $row) {
                 $data['failed_test_name'][] = $row->failed_test_name;
                 $data['ftn'][] = $row->ftn;

@@ -28,6 +28,7 @@
 
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
+    <script src="js/papaparse.min.js"></script>
 
     <!-- Chart plugins -->
     <!-- <script src="vendor/chart.js/Chart.min.js"></script>
@@ -41,5 +42,7 @@
     <script src="vendor/datatables/Buttons-2.2.3/js/buttons.bootstrap4.min.js"></script>
     <script src="vendor/datatables/Buttons-2.2.3/js/buttons.html5.min.js"></script>
     <script src="vendor/datatables/jszip-3.1.3/jszip.min.js"></script>
+    <script src="vendor/datatables/jszip-3.1.3/jszip.min.js"></script>
+    <script src="vendor/bootstrap-table/bootstrap-table.min.js"></script>
 </body>
 </html>

@@ -5,89 +5,59 @@ use CodeIgniter\HTTP\RequestInterface;
 use App\Models\ScanningModel;
 use App\Models\ImportCSVModel;
 
-class ScanningController extends Controller {
+class ScanningController extends BaseController {
     public function __construct(){
         $this->scanning = new ScanningModel();
         $this->importCSV = new ImportCSVModel();
-        $request = \Config\Services::request();        
-        // $this->dir = "C:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //local
-        $this->dir = "E:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //server
+        $request = \Config\Services::request();
+        $this->dir = "C:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //local
+        // $this->dir = "E:/Motorola_Charger_TestLog/1_MUC_TestLog/CSV_Test_Log/TestMonitoring/"; //server
     }
 
     public function index(){
-        $current_date = date("Y-m-d");
-
-        $data['totalTest'] = $this->importCSV
-                                ->where("date(test_time) = '$current_date'")
-                                ->countAllResults();
-        $data['totalPass'] = $this->importCSV->where('result', 'Pass')
-                                ->where("date(test_time) = '$current_date'")
-                                ->countAllResults();
-
-        $results = ['Fail', 'Abort'];
-        $data['totalFail'] = $this->importCSV->whereIn('result', $results)
-                                ->where("date(test_time) = '$current_date'")
-                                ->countAllResults();        
-       
-        $yieldRate = 0;
-        try {
-            $yieldRate = ($data['totalPass']/$data['totalTest']) * 100;
-        } catch (\Exception $e) {
-            // echo($e->getMessage());
-        }           
-        $data['yieldRate'] = number_format($yieldRate,2);
-
-        $data['getFtn'] = $this->scanning->getFailedTestName();
-        $data['getModel'] = $this->scanning->getTestModel();
-
-        if(!empty($data['getModel'])){
-            for($i=0;$i<count($data['getModel']);$i++){
-                $data['testTotalByModel'][] = $this->importCSV
-                                                ->where('type',$data['getModel']['type'][$i])
-                                                ->where("date(test_time) = '$current_date'")
-                                                ->countAllResults();
-                $data['testTotalPass'][] = $this->importCSV
-                                            ->where('result', 'Pass')
-                                            ->where('type',$data['getModel']['type'][$i])
-                                            ->where("date(test_time) = '$current_date'")
-                                            ->countAllResults();
-                $data['testTotalFail'][] = $this->importCSV->whereIn('result', $results)
-                                            ->where('type',$data['getModel']['type'][$i])
-                                            ->where("date(test_time) = '$current_date'")
-                                            ->countAllResults();
-            }
-        }
-        return view('header')
-            .view('sidebar')
-            .view('index',$data)
-            .view('footer');
+        return redirect()->route('scan/dashboard');
     }
 
-    public function importCsv(){
-        return view('header')
-            .view('sidebar')
-            .view('importCSV')
-            .view('footer');
+    public function dashboard(){        
+        return view('scan/header')
+            .view('scan/sidebar')
+            .view('scan/index')
+            .view('scan/footer');
+    }
+
+    public function viewFailByModel(){
+        if ($this->request->isAJAX()) {
+            $model = $this->request->getPost("model");
+            $data = $this->scanning->viewFailByModel($model);
+            echo json_encode($data);
+        }
+    }
+
+    public function uploadCSV(){
+        return view('scan/header')
+            .view('scan/sidebar')
+            .view('scan/uploadCSV')
+            .view('scan/footer');
     }
 
     public function importCsvToDb(){
         $input = $this->validate([
             'file' => 'uploaded[file]|max_size[file,2048]|ext_in[file,csv],'
         ]);
+
         if (!$input) {
             $data['validation'] = $this->validator;
-            return view('header')
-                .view('sidebar')
-                .view('index', $data)
-                .view('footer'); 
+            $mgsAlert['message'] = 'No CSV file that be imported.';
+            $mgsAlert['alertClass'] = 'alert-danger';
         }else{
-            if($file = $this->request->getFile('file')) {
+            $file = $this->request->getFile('file');
+            if($file) {
                 $fileName = $file->getName();
                 if ($file->isValid() && ! $file->hasMoved()) {
                     $CSVfp = fopen($file,"r");
                     $i = 0;
                     $numberOfFields = 9;
-                    $csvArr = array();
+                    $csvArr = array();                    
                     
                     while (($filedata[] = fgetcsv($CSVfp, 1000, ",")) !== FALSE) {
                         $num = count($filedata);
@@ -103,57 +73,71 @@ class ScanningController extends Controller {
                             $csvArr[$i]['fixture'] = $filedata[6][1];
                             $csvArr[$i]['result'] = $filedata[7][1];
                             $csvArr[$i]['failed_test_name'] = $filedata[8][1];
+                            $csvArr[$i]['file_name'] = $fileName;
                         }
                         $i++;
                     }
                     fclose($CSVfp);
                     $count = 0;
                     foreach($csvArr as $userdata){
-                        $findRecord = $this->importCSV->where('unique_id', $userdata['unique_id'])->countAllResults();
+                        $findRecord = $this->importCSV->where('file_name', $userdata['file_name'])->countAllResults();
                         if($findRecord == 0){
                             if($this->importCSV->insert($userdata)){
                                 $count++;
                             }
+                            $file->move($this->dir, $fileName);
                             session()->setFlashdata('message', $fileName.' file successfully added.');
                             session()->setFlashdata('alert-class', 'alert-success');
+                            $mgsAlert['message'] = $fileName.' file successfully added.';
+                            $mgsAlert['alertClass'] = 'alert-success';
                         }else{
                             session()->setFlashdata('message', $fileName.' file already added.');
                             session()->setFlashdata('alert-class', 'alert-warning');
+                            $mgsAlert['message'] = $fileName.' file already added.';
+                            $mgsAlert['alertClass'] = 'alert-warning';
                         }
                     }
                 }else{
-                    session()->setFlashdata('message', 'CSV file coud not be imported.');
+                    session()->setFlashdata('message', 'CSV file could not be imported.');
                     session()->setFlashdata('alert-class', 'alert-danger');
+                    $mgsAlert['message'] = 'CSV file could not be imported.';
+                    $mgsAlert['alertClass'] = 'alert-danger';
                 }
             }else{
-                session()->setFlashdata('message', 'CSV file coud not be imported.');
+                session()->setFlashdata('message', 'CSV file could not be imported.');
                 session()->setFlashdata('alert-class', 'alert-danger');
+                $mgsAlert['message'] = 'CSV file could not be imported.';
+                $mgsAlert['alertClass'] = 'alert-danger';
             }
         }
-        return redirect()->to(base_url().'/importCSV');     
+        echo json_encode($mgsAlert);     
     }
 
-    public function searchItems(){
+    public function searchItems(){        
         $data['model'] = $this->scanning->getModels();
         $data['process_name'] = $this->scanning->getProcessName();
         $data['station_id'] = $this->scanning->getStationID();
 
-        return view('header')
-            .view('sidebar')
-            .view('searchItems',$data)
-            .view('footer');
+        return view('scan/header')
+            .view('scan/sidebar')
+            .view('scan/searchItems',$data)
+            .view('scan/footer');
     }
 
     public function searchItemsAjax(){
         if ($this->request->isAJAX()) {
             $unique_id = $this->request->getPost("unique_id");
-            $files = scandir($this->dir,1);
-            $fileName = "";         
-            foreach ($files as $file) {
-                $fileName .= strstr($file,$unique_id);
+            $fileName = $this->scanning->searchCSVFile($unique_id);
+            $filePath = $this->dir.$fileName;
+            $files = is_file($filePath);
+            // var_dump($files);
+            // echo $filePath."<br>";
+            if(file_exists($filePath)){
+                // echo "path exist";
+            }else{
+                // echo "path not exist";
             }
-
-            $file = fopen($this->dir.$fileName,"r");
+            $file = fopen($filePath,"r");
             $csvData = array();
             $fileStream = array();
 
@@ -165,19 +149,7 @@ class ScanningController extends Controller {
             $num = 0;
                     
             while (($filedata[] = fgetcsv($file)) !== FALSE) {
-                $num = count($filedata);
-                /* if($i > 0 && $num == $numberOfFields){
-                    $csvArr[$filedata[0][0]] = $filedata[0][1];
-                    $csvArr[$filedata[1][0]] = $filedata[1][1];
-                    $csvArr[$filedata[2][0]] = $filedata[2][1];
-                    $csvArr[$filedata[3][0]] = $filedata[3][1];
-                    $csvArr[$filedata[4][0]] = $filedata[4][1];
-                    $csvArr[$filedata[5][0]] = $filedata[5][1];
-                    $csvArr[$filedata[6][0]] = $filedata[6][1];
-                    $csvArr[$filedata[7][0]] = $filedata[7][1];
-                    $csvArr[$filedata[8][0]] = $filedata[8][1];
-                }                
-                $i++; */               
+                $num = count($filedata);          
             }
 
             $lastArr = $num-1;
@@ -282,13 +254,13 @@ class ScanningController extends Controller {
             readfile ($url);
         }
         exit();
-        return redirect()->route('searchItems');
+        return redirect()->route('scan/searchItems');
     }
 
     public function printLabel(){
-        return view('header')
-            .view('sidebar')
-            .view('printLabel')
-            .view('footer');
+        return view('scan/header')
+            .view('scan/sidebar')
+            .view('scan/printLabel')
+            .view('scan/footer');
     }
 }

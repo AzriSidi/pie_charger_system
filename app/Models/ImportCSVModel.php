@@ -16,6 +16,7 @@ class ImportCSVModel extends Model{
         'station_id',
         'fixture',
         'result',
-        'failed_test_name'
+        'failed_test_name',
+        'file_name'
     ];
 }

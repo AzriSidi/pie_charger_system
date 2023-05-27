@@ -3,10 +3,16 @@
     "type": "project",
     "description": "CodeIgniter4 starter app",
     "homepage": "https://codeigniter.com",
-    "license": "MIT",
+    "license": "MIT",    
     "require": {
         "php": "^7.4 || ^8.0",
-        "codeigniter4/framework": "^4.0"
+        "codeigniter4/framework": "^4.0",
+        "web-token/jwt-framework": "^3.1",
+        "firebase/php-jwt": "^6.4",
+        "paragonie/sodium_compat": "^1.20"
+    },
+    "config": {
+        "platform-check": false
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

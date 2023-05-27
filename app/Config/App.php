@@ -24,7 +24,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $baseURL = 'http://localhost.apps/';
+    public $baseURL = BASE_URL."/appstarter";
 
     /**
      * --------------------------------------------------------------------------

@@ -7,30 +7,13 @@ class ScanningModel extends Model
 {
     public function __construct(){    
         $this->db = \Config\Database::connect();
+        date_default_timezone_set('Asia/Kuala_Lumpur');
         $this->current_date = date("Y-m-d");
-    }
-
-    public function getFailedTestName(){
-        $data = [];
-        $checkFail = ['Fail', 'Abort'];
-        $table = $this->db->table('model_test_result');
-        $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')
-                    ->where("date(test_time) = '$this->current_date'")         
-                    ->whereIn('result', $checkFail)
-                    ->groupBy('failed_test_name')
-                    ->having('ftn > 0')
-                    ->orderBy('ftn', 'DESC');
-        $result = $query->get();
-        foreach ($result->getResult() as $row) {
-            $data['failed_test_name'][] = $row->failed_test_name;
-            $data['ftn'][] = $row->ftn;
-        }
-        return $data;
     }
 
     public function getModels(){
         $table = $this->db->table('info_charger_scanning a, model_test_result b');
-        $query = $table->select('DISTINCT(a.model)')        
+        $query = $table->select('DISTINCT(a.model)')
                     ->where('a.type=b.type');
         $result = $query->get();
         foreach ($result->getResult() as $row) {
@@ -59,20 +42,6 @@ class ScanningModel extends Model
         return $data;
     }
 
-    public function getTestModel(){
-        $data = [];
-        $table = $this->db->table('info_charger_scanning a');
-        $query = $table->select('DISTINCT(a.model) as model, a.type')
-                ->where("date(b.test_time) != '$this->current_date'")
-                ->join('model_test_result b', 'a.type = b.type', 'right');
-        $result = $query->get();
-        foreach ($result->getResult() as $row) {
-            $data['model'][] = $row->model;
-            $data['type'][] = $row->type;
-        }
-        return $data;
-    }
-
     public function getSearchData($search){
         $column = "a.model,b.sn,b.unique_id,b.test_time,b.total_time,b.process_name,
                     b.operator_id,b.station_id,b.fixture,b.result,b.failed_test_name,
@@ -87,7 +56,7 @@ class ScanningModel extends Model
 		}if($search['stationId'] != null){
             $query = $table->where("b.station_id",$search['stationId']);
 		}if($search['date_strt'] != null && $search['date_end'] != null){
-            $query = $table->where("date(b.test_time) BETWEEN '".
+            $query = $table->where("date(b.timestamp) BETWEEN '".
                      $search['date_strt']."' and '".$search['date_end']."'");
         }if($search['result'] != null){
             $query = $table->where("b.result",$search['result']);
@@ -134,18 +103,69 @@ class ScanningModel extends Model
         $type = "";
         foreach ($result->getResult() as $row) {
             $type = $row->type;
-        }
-        
+        }        
         $data = [];
         if(!empty($type)){
             $table = $this->db->table('model_test_result');
             $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')
                     ->where('type',$type)
-                    ->where('result', $search['result'])
-                    ->groupBy('failed_test_name')
+                    ->where('result', $search['result']);            
+            if($search['sn'] != null){
+                $query = $table->where("sn",$search['sn']);
+            }if($search['stationId'] != null){
+                $query = $table->where("station_id",$search['stationId']);
+            }if($search['date_strt'] != null && $search['date_end'] != null){
+                $query = $table->where("date(timestamp) BETWEEN '".
+                $search['date_strt']."' and '".$search['date_end']."'");
+            }if($search['uniqueId'] != null){
+                $query = $table->where("unique_id",$search['uniqueId']);
+            }
+            $query = $table->groupBy('failed_test_name')
                     ->having('ftn > 0')
                     ->orderBy('ftn', 'DESC');
             $result = $query->get();            
+            foreach ($result->getResult() as $row) {
+                $data['failed_test_name'][] = $row->failed_test_name;
+                $data['ftn'][] = $row->ftn;
+            }
+        }
+        return $data;
+    }
+
+    public function searchCSVFile($uniqueID){
+        $table = $this->db->table('model_test_result');
+        $query = $table->select('file_name')       
+                ->where('unique_id',$uniqueID);
+        $result = $query->get();
+        $fileName = "";
+        foreach ($result->getResult() as $row) {
+            $fileName = $row->file_name;
+        }
+        return $fileName;
+    }
+
+    public function viewFailByModel($model){
+        $table = $this->db->table('info_charger_scanning');
+        $query = $table->select('type')       
+                ->where('model',$model);
+        $result = $query->get();
+        $type = "";
+        foreach ($result->getResult() as $row) {
+            $type = $row->type;
+        }
+
+        $data = [];
+        $checkFail = ['Fail', 'Abort'];
+        if(!empty($type)){
+            $table = $this->db->table('model_test_result');
+            $query = $table->select('failed_test_name,COUNT(failed_test_name) AS ftn')
+                        ->where("date(timestamp) = '$this->current_date'")
+                        ->where("type",$type)        
+                        ->whereIn('result', $checkFail)
+                        ->groupBy('failed_test_name')
+                        ->having('ftn > 0')
+                        ->orderBy('ftn', 'DESC');
+            $result = $query->get();
             foreach ($result->getResult() as $row) {
                 $data['failed_test_name'][] = $row->failed_test_name;
                 $data['ftn'][] = $row->ftn;

@@ -17,7 +17,7 @@ if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
@@ -25,7 +25,7 @@ $routes->set404Override();
 // where controller filters or CSRF protection are bypassed.
 // If you don't want to define all routes, please use the Auto Routing (Improved).
 // Set `$autoRoutesImproved` to true in `app/Config/Feature.php` and set the following to true.
-//$routes->setAutoRoute(false);
+$routes->setAutoRoute(true);
 
 /*
  * --------------------------------------------------------------------
@@ -35,15 +35,36 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-// $routes->get('/', 'Home::index');
-$routes->get('/', 'ScanningController::index');
-$routes->get('importCSV', 'ScanningController::importCsv');
-$routes->get('printLabel', 'ScanningController::printLabel');
-$routes->post('import-csv', 'ScanningController::importCsvToDb');
-$routes->post('searchData', 'ScanningController::searchData');
-$routes->get('searchItems', 'ScanningController::searchItems');
-$routes->post('searchItemsAjax', 'ScanningController::searchItemsAjax');
-$routes->get('downloadFile/(:any)', 'ScanningController::downloadFile/$1');
+
+//scan routes
+$routes->get('/scan', 'ScanningController::index');
+$routes->get('/scan/dashboard', 'ScanningController::dashboard');
+$routes->get('/scan/uploadCSV', 'ScanningController::uploadCSV');
+$routes->get('/scan/printLabel', 'ScanningController::printLabel');
+$routes->post('/scan/import-csv', 'ScanningController::importCsvToDb');
+$routes->post('/scan/searchData', 'ScanningController::searchData');
+$routes->get('/scan/searchItems', 'ScanningController::searchItems');
+$routes->post('/scan/searchItemsAjax', 'ScanningController::searchItemsAjax');
+$routes->get('/scan/downloadFile/(:any)', 'ScanningController::downloadFile/$1');
+$routes->post('/scan/viewFailByModel', 'ScanningController::viewFailByModel');
+
+// pack routes
+$routes->get('/pack', 'PackingController::index');
+$routes->get('/pack/dashboard', 'PackingController::dashboard');
+$routes->get('/pack/searchItems', 'PackingController::searchItems');
+$routes->post('/pack/searchData', 'PackingController::searchData');
+$routes->get('/pack/addModel', 'PackingController::addModel');
+$routes->post('/pack/sendModel', 'PackingController::sendModel');
+$routes->get('/pack/editModel', 'PackingController::editModel');
+$routes->post('/pack/searchModel', 'PackingController::searchModel');
+$routes->post('/pack/saveEditModel', 'PackingController::saveEditModel');
+$routes->get('/pack/login', 'PackingController::login');
+$routes->get('/pack/profile', 'PackingController::profile',['filter' => 'authGuard']);
+$routes->get('/pack/register', 'PackingController::register');
+$routes->get('/pack/logout', 'PackingController::logout');
+$routes->match(['get', 'post'], '/pack/store', 'PackingController::store');
+$routes->match(['get', 'post'], '/pack/loginAuth', 'PackingController::loginAuth');
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

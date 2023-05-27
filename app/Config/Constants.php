@@ -15,6 +15,11 @@
  */
 defined('APP_NAMESPACE') || define('APP_NAMESPACE', 'App');
 
+$host = $_SERVER['HTTP_HOST'];
+$http_https = isset($_SERVER['HTTPS']) ? "https://" : "http://";
+$baseURL = $http_https.$host;
+define('BASE_URL', $baseURL);
+
 /*
  | --------------------------------------------------------------------------
  | Composer Path

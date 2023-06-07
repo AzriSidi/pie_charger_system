@@ -164,7 +164,7 @@ class PackingController extends BaseController{
 
     public function sendModel(){
         if($this->request->isAJAX()){
-            $path = "T:\SUC_Scanning\SUC_Scanning_System\Label_Packing\Charger Assembly Carton Label.lbl";
+            $path = "C:\packing_label\Charger Assembly Carton Label.lbl";
             $data['label_path'] = $path;
             $data['custNo'] = $this->request->getPost("custNo");
             $data['model'] = $this->request->getPost("model");

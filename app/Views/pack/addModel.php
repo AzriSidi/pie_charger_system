@@ -63,6 +63,17 @@
                   <label data-error="wrong" data-success="right">Tolerance (Kg)</label>
                   <input id="tolerance" type="text" rows="2" class="form-control">
                 </div>
+                <div class="form-group md-form mt-3">
+                  <label data-error="wrong" data-success="right">Check SN</label>                
+                  <div class="form-check">
+                    <label data-error="wrong" data-success="right">Yes</label>
+                    <input class="form-check-input" type="radio" name="radioCheck" value="1" checked>                  
+                  </div>
+                  <div class="form-check">
+                    <label data-error="wrong" data-success="right">No</label>
+                    <input class="form-check-input" type="radio" name="radioCheck" value="0">
+                  </div>
+                </div>
                 <button class="btn btn-dark btn-rounded nextBtn float-right" type="button">Next</button>
               </div>
             </div>
@@ -266,6 +277,7 @@
       var lineNo = $("#lineNo").val();
       var singleUnit = $("#singleUnit").val();
       var tolerance = $("#tolerance").val();
+      var checkSN = $("input[name=radioCheck]:checked").val();
       // item
       var totalScan = $("#totalScan").val();
       var itemDetail = [];
@@ -287,6 +299,7 @@
           lineNo : lineNo,
           singleUnit : singleUnit,
           tolerance : tolerance,
+          checkSN : checkSN,
           totalScan : totalScan,
           itemDetail : itemDetail,
           itemDetailText : itemDetailText,

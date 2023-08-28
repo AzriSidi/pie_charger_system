@@ -72,6 +72,17 @@
                   <label data-error="wrong" data-success="right">Tolerance (Kg)</label>
                   <input id="tolerance" type="text" rows="2" class="form-control">
                 </div>
+                <div class="form-group md-form mt-3">
+                  <label data-error="wrong" data-success="right">Check SN</label>                
+                  <div class="form-check">
+                    <label data-error="wrong" data-success="right">Yes</label>
+                    <input class="form-check-input yes" type="radio" name="radioCheck" id="checkSN" value="1">                  
+                  </div>
+                  <div class="form-check">
+                    <label data-error="wrong" data-success="right">No</label>
+                    <input class="form-check-input no" type="radio" name="radioCheck" id="checkSN" value="0">
+                  </div>
+                </div>
                 <button class="btn btn-dark btn-rounded nextBtn float-right" type="button">Next</button>
               </div>
             </div>
@@ -150,7 +161,13 @@
           var lineNo = res.line_no;
           var suw = res.single_unit_weight;
           var tol = res.tolerance;
-          // console.log("res: "+JSON.stringify(response)) 
+          var checkSN = res.checkSN;
+          var checked = $('#checkSN').val();
+          if(checkSN == 1){
+            $('.yes').prop('checked', true);
+          }else{
+            $('.no').prop('checked', true);
+          }       
 
           itemNo = res.item_no;
           itemDetail = res.item_detail;
@@ -355,6 +372,8 @@
       var lineNo = $("#lineNo").val();
       var singleUnit = $("#singleUnit").val();
       var tolerance = $("#tolerance").val();
+      var checkSN = $('input[name=radioCheck]:checked').val();
+      console.log("checkSN: "+checkSN)
       // item
       var totalScan = $("#totalScan").val();
       var itemDetail = [];
@@ -376,6 +395,7 @@
           lineNo : lineNo,
           singleUnit : singleUnit,
           tolerance : tolerance,
+          checkSN : checkSN,
           totalScan : totalScan,
           itemDetail : itemDetail,
           itemDetailText : itemDetailText,

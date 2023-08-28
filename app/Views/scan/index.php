@@ -207,7 +207,6 @@ $(document).ready(function(){
             }else{
 				style = "enabled"
 			}
-			console.log("style: "+style)
             $("#testRow").append("<tr><th scope='row'>"+j+"</th><td>"+model+"</td><td>"+total+"</td>"+
                 "<td>"+total_pass+"</td><td>"+total_fail+"</td><td>"+yield_rate+"%</td>"+
                 "<td><button type='button' id='btnFail' value='"+model+"' "+style+

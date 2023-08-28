@@ -64,6 +64,19 @@
         <span>Edit Model</span></a>
     </li>
     <hr class="sidebar-divider my-0">
+    <?php
+        $active = "";
+        $uri = current_url(true);
+        if($uri->getSegment(3) == "searchBoxIdSN"){
+            $active = "active";
+        }
+    ?>
+    <li class="nav-item <?=$active?>">
+        <a class="nav-link" href="<?=base_url()."/pack/searchBoxIdSN"?>">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Search SN</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
     <!-- Sidebar Toggler (Sidebar) -->

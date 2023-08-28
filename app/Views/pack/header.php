@@ -22,8 +22,8 @@
         if($uri->getSegment(3) == "editModel"){
             $title = "Edit Model";
         }
-        if($uri->getSegment(3) == "uploadInfo"){
-            $title = "Upload Info";
+        if($uri->getSegment(3) == "searchBoxIdSN"){
+            $title = "Search SN";
         }
         if($uri->getSegment(3) == "login"){
             $title = "Login";

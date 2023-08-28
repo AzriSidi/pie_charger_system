@@ -9,7 +9,8 @@
         "codeigniter4/framework": "^4.0",
         "web-token/jwt-framework": "^3.1",
         "firebase/php-jwt": "^6.4",
-        "paragonie/sodium_compat": "^1.20"
+        "paragonie/sodium_compat": "^1.20",
+        "hermawan/codeigniter4-datatables": "^0.6.1"
     },
     "config": {
         "platform-check": false

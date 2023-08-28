@@ -27,6 +27,7 @@
                         <option value="">--Select Role--</option>
                         <option value="Manager">Manager</option>
                         <option value="Assist Manager">Assist Manager</option>
+                        <option value="Supervisor">Supervisor</option>
                         <option value="Engineer">Engineer</option>
                         <option value="Assist Engineer">Assist Engineer</option>
                         <option value="Technician">Technician</option>

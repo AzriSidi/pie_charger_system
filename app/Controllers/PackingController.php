@@ -1,8 +1,8 @@
 <?php
 namespace App\Controllers;
-use CodeIgniter\Controller;
 use App\Models\PackDataModel;
 use App\Models\UserModel;
+use \Hermawan\DataTables\DataTable;
 
 class PackingController extends BaseController{
     public function __construct(){
@@ -116,39 +116,38 @@ class PackingController extends BaseController{
             .view('pack/footer');
     }
 
-    public function searchData(){
+    public function checkSN(){
         if($this->request->isAJAX()){
-            $search['custNo'] = $this->request->getPost("custNo");            
-            $search['boxId'] = $this->request->getPost("boxId");
-            $search['lineNo'] = $this->request->getPost("lineNo");
-            $search['date_strt'] = $this->request->getPost("date_strt");
-            $search['date_end'] = $this->request->getPost("date_end");
-            $search['packedBy'] = $this->request->getPost("packedBy");
-            $search['shift'] = $this->request->getPost("shift");           
-            $j=1;
-            $getData = $this->packing->getSearchData($search);
-            $data = [];
-            if(!empty($getData)){
-                for($i=0;$i<count($getData['cust_no']);$i++){
-                    $nestedData['#'] = $j;
-                    $nestedData['cust_no'] = $getData['cust_no'][$i];
-                    $nestedData['box_id'] = $getData['box_id'][$i];
-                    $nestedData['quantity_per_box'] = $getData['quantity_per_box'][$i];
-                    $nestedData['gross_weight'] = $getData['gross_weight'][$i];
-                    $nestedData['plant_id'] = $getData['plant_id'][$i];
-                    $nestedData['line_no'] = $getData['line_no'][$i];
-                    $nestedData['shift'] = $getData['shift'][$i];                    
-                    $nestedData['packed_by'] = $getData['packed_by'][$i];
-                    $nestedData['date_time'] = $getData['date_time'][$i];
-                    $data[] = $nestedData;
-                    $j++;
-                }
+            $boxId = $this->request->getPost("box_id");
+            $result = [];
+            for($i=0;$i<count((array)$boxId);$i++){
+                $sn = $this->packing->searchSN($boxId[$i]);
+                $result[] = array(
+                    "box_id"=>$boxId[$i],
+                    "sn"=>$sn
+                );
             }
-            $jsonData = array("data"=>$data);
-            echo json_encode($jsonData);
+            header("Content-Type: application/json;charset=utf-8");
+            $jsonObj = array("data"=>$result);
+            echo json_encode($jsonObj);          
         }
     }
 
+    public function searchSN(){
+        if($this->request->isAJAX()){
+            $boxId = $this->request->getPost("box_id");
+            $sn = $this->packing->searchSN($boxId);
+            $result[] = array(
+                "box_id"=>$boxId,
+                "sn"=>$sn
+            );
+            
+            header("Content-Type: application/json;charset=utf-8");
+            $jsonObj = array("data"=>$result);
+            echo json_encode($jsonObj);          
+        }
+    }
+    
     public function addModel(){
         if($this->session->get('batch_no') != null){
             $data['itemDetail'] = $this->packing->getItemDetail();
@@ -172,6 +171,7 @@ class PackingController extends BaseController{
             $data['lineNo'] = $this->request->getPost("lineNo");
             $data['singleUnit'] = $this->request->getPost("singleUnit");
             $data['tolerance'] = $this->request->getPost("tolerance");
+            $data['checkSN'] = $this->request->getPost("checkSN");
             $data['totalScan'] = $this->request->getPost("totalScan");         
             $data['itemDetail'] = $this->request->getPost("itemDetail");
             $data['itemDetailText'] = $this->request->getPost("itemDetailText");
@@ -213,6 +213,7 @@ class PackingController extends BaseController{
             $data['lineNo'] = $this->request->getPost("lineNo");
             $data['singleUnit'] = $this->request->getPost("singleUnit");
             $data['tolerance'] = $this->request->getPost("tolerance");
+            $data['checkSN'] = $this->request->getPost("checkSN");
             $data['totalScan'] = $this->request->getPost("totalScan");         
             $data['itemDetail'] = $this->request->getPost("itemDetail");
             $data['itemDetailText'] = $this->request->getPost("itemDetailText");
@@ -220,6 +221,62 @@ class PackingController extends BaseController{
             $saveData = $this->packing->editModel($data);
             $json = array("response"=>$saveData);
             echo json_encode($json);
+        }
+    }
+
+    public function testDatatables() {
+        $search['custNo'] = $this->request->getPost("custNo");            
+        $search['boxId'] = $this->request->getPost("boxId");
+        $search['lineNo'] = $this->request->getPost("lineNo");
+        $search['date_strt'] = $this->request->getPost("date_strt");
+        $search['date_end'] = $this->request->getPost("date_end");
+        $search['packedBy'] = $this->request->getPost("packedBy");
+        $search['shift'] = $this->request->getPost("shift");
+        $getData = $this->packing->searchDataTable($search);
+        return DataTable::of($getData)->toJson(true);
+    }   
+
+    public function searchDataSN(){
+        if($this->request->isAJAX()){
+            $search['model'] = $this->request->getPost("model");            
+            $search['boxId'] = $this->request->getPost("boxId");
+            $search['sn'] = $this->request->getPost("sn");
+            $search['date_strt'] = $this->request->getPost("date_strt");
+            $search['date_end'] = $this->request->getPost("date_end");
+            $j=1;
+            $getData = $this->packing->getSearchDataSN($search);
+            // var_dump($getData);
+            $data = [];
+            if(!empty($getData)){
+                for($i=0;$i<count($getData['model']);$i++){
+                    $nestedData['#'] = $j;
+                    $nestedData['model'] = $getData['model'][$i];
+                    $nestedData['boxId'] = $getData['box_id'][$i];
+                    $nestedData['sn'] = $getData['sn'][$i];
+                    $data[] = $nestedData;
+                    $j++;
+                }
+            }            
+            $jsonData = array("data"=>$data);
+            echo json_encode($jsonData);
+        }
+    }
+
+    public function searchBoxIdSN(){
+        $data['name'] = $this->session->get('name');
+        $data['model'] = $this->packing->getModel();
+        return view('pack/header')
+                .view('pack/sideTopBar',$data)
+                .view('pack/searchBoxIdSN',$data)
+                .view('pack/footer');
+    }
+
+    public function deleteSN(){
+        if($this->request->isAJAX()){
+            $boxId = $this->request->getPost("box_id");
+            $mgs = $this->packing->deleteSN($boxId);
+            $jsonData = array("msg"=>$mgs);
+            echo json_encode($jsonData);
         }
     }
 }

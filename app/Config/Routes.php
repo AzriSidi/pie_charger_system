@@ -52,7 +52,7 @@ $routes->post('/scan/viewFailByModel', 'ScanningController::viewFailByModel');
 $routes->get('/pack', 'PackingController::index');
 $routes->get('/pack/dashboard', 'PackingController::dashboard');
 $routes->get('/pack/searchItems', 'PackingController::searchItems');
-$routes->post('/pack/searchData', 'PackingController::searchData');
+$routes->post('/pack/searchDataPack', 'PackingController::searchDataPack');
 $routes->get('/pack/addModel', 'PackingController::addModel');
 $routes->post('/pack/sendModel', 'PackingController::sendModel');
 $routes->get('/pack/editModel', 'PackingController::editModel');
@@ -62,8 +62,15 @@ $routes->get('/pack/login', 'PackingController::login');
 $routes->get('/pack/profile', 'PackingController::profile',['filter' => 'authGuard']);
 $routes->get('/pack/register', 'PackingController::register');
 $routes->get('/pack/logout', 'PackingController::logout');
+$routes->post('/pack/searchSN', 'PackingController::searchSN');
+$routes->post('/pack/checkSN', 'PackingController::checkSN');
+$routes->post('/pack/testDatatables', 'PackingController::testDatatables');
 $routes->match(['get', 'post'], '/pack/store', 'PackingController::store');
 $routes->match(['get', 'post'], '/pack/loginAuth', 'PackingController::loginAuth');
+$routes->get('/pack/logout', 'PackingController::logout');
+$routes->get('/pack/searchBoxIdSN', 'PackingController::searchBoxIdSN');
+$routes->post('/pack/searchDataSN', 'PackingController::searchDataSN');
+$routes->post('/pack/deleteSN', 'PackingController::deleteSN');
 
 /*
  * --------------------------------------------------------------------

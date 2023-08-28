@@ -206,7 +206,8 @@ function db_query_pack_data(){
   var totalGross = []
   var totalPackByLineNo = []
 
-  db.query("SELECT COUNT(*) as total_pack FROM packing_data where date(timestamp) = CURDATE()"
+  db.query("SELECT COUNT(*) as total_pack FROM packing_data where date(timestamp) = CURDATE() and "+
+  "shift = (SELECT shift FROM packing_data ORDER BY id DESC LIMIT 1)"
   ).on('result', function(data){  
     totalPack.push(data)
     console.log("total pack: "+data.total_pack)
@@ -214,7 +215,8 @@ function db_query_pack_data(){
     io.sockets.emit('total_pack',totalPack)
   })
 
-  db.query("SELECT sum(gross_weight) as total_gross FROM packing_data where date(timestamp) = CURDATE()"
+  db.query("SELECT sum(gross_weight) as total_gross FROM packing_data where date(timestamp) = CURDATE() and "+
+  "shift = (SELECT shift FROM packing_data ORDER BY id DESC LIMIT 1)"
   ).on('result', function(data){
     if(data.total_gross != null){
       let grossWeight = data.total_gross.toFixed(3)
@@ -225,7 +227,8 @@ function db_query_pack_data(){
   })
 
   db.query("SELECT cust_no,quantity_per_box,line_no,shift,packed_by,COUNT(*) AS total_packed, "+
-    "sum(gross_weight) AS gross_weight FROM packing_data WHERE date(timestamp) = CURDATE() "+
+    "sum(gross_weight) AS gross_weight FROM packing_data WHERE date(timestamp) = CURDATE() and "+
+    "shift = (SELECT shift FROM packing_data ORDER BY id DESC LIMIT 1)"+
 	  "GROUP BY cust_no ORDER BY line_no ASC"
   ).on('result', function(data){
     totalPackByLineNo.push(data)

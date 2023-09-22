@@ -193,7 +193,7 @@ class PackingController extends BaseController{
                 .view('pack/footer');
         }else{
             return redirect()->to('/pack/login');
-        }    
+        }
     }
 
     public function searchModel(){

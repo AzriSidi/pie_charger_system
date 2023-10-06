@@ -45,8 +45,7 @@
     <script src="../vendor/datatables/jszip-3.1.3/jszip.min.js"></script>
     <script src="../vendor/bootstrap-table/bootstrap-table.min.js"></script>
 
-    <?php $ip = $_SERVER['SERVER_ADDR']; ?>
     <!-- Socket.Io -->
-    <script src="http://<?=$ip?>:4000/socket.io/socket.io.js"></script>
+    <script src="../socket.io/socket.io.js"></script>
 </body>
 </html>

@@ -18,7 +18,7 @@ class ScanningController extends BaseController {
         return redirect()->route('scan/dashboard');
     }
 
-    public function dashboard(){        
+    public function dashboard(){
         return view('scan/header')
             .view('scan/sidebar')
             .view('scan/index')

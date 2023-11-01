@@ -298,12 +298,12 @@
             var table = $('#dataTable').DataTable({
                 "bPaginate": true,
                 "bFilter": false,
-                "bInfo": true,       
+                "bInfo": true,
                 "order": [[ 1, 'desc' ]],
                 "processing": true,
 				"serverSide": false,
                 "pageLength": 10,
-                "pagingType": "full_numbers",              
+                "pagingType": "full_numbers",           
 				"ajax": {
 					"url":"<?php echo base_url('/scan/searchData');?>",
 					"type": "POST",

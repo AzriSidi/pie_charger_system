@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
       },
     });
 
-    await instance.start();      
+    await instance.start();
     instance.addTrigger({
       name: 'Insert database events from model_test_result',
       expression: 'motorola_charger_db.model_test_result',
